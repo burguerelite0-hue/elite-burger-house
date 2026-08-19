@@ -1,0 +1,4 @@
+import type { CouponType } from "@/generated/prisma/client";
+
+export function calculateCouponDiscount(type: CouponType | string, value: number, subtotal: number) { return Math.min(type === "PERCENTAGE" ? subtotal * (value / 100) : value, subtotal); }
+export function couponError(coupon: { active: boolean; startsAt: Date; endsAt: Date; usageLimit: number | null; usageCount: number; minimumValue: unknown }, subtotal: number) { const now = new Date(); if (!coupon.active) return "Cupom inativo."; if (now < coupon.startsAt || now > coupon.endsAt) return "Cupom fora da validade."; if (coupon.usageLimit !== null && coupon.usageCount >= coupon.usageLimit) return "Limite de utilização atingido."; if (subtotal < Number(coupon.minimumValue)) return `Pedido mínimo de R$ ${Number(coupon.minimumValue).toFixed(2).replace(".", ",")}.`; return null; }

@@ -1,0 +1,4 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function GET() { if (!prisma) return NextResponse.json({ error: "Banco de dados não configurado." }, { status: 503 }); const orders = await prisma.order.findMany({ include: { customer: true, items: true }, orderBy: { createdAt: "desc" }, take: 50 }); return NextResponse.json(orders.map((order) => ({ id: order.id, orderNumber: order.orderNumber, customer: order.customer?.name ?? "Cliente", total: order.total.toString(), paymentMethod: order.paymentMethod, status: order.status, itemCount: order.items.reduce((sum, item) => sum + item.quantity, 0), createdAt: order.createdAt }))); }

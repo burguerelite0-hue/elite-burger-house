@@ -1,0 +1,19 @@
+"use client";
+
+import { ChartNoAxesCombined, ChevronLeft, ChevronRight, ClipboardList, LayoutDashboard, LogOut, PanelsTopLeft, Settings2, Sparkles, Tags, TicketPercent, Users, Utensils, X } from "lucide-react";
+import { adminNav, type AdminSection } from "@/data/admin";
+
+type AdminSidebarProps = { active: AdminSection; collapsed: boolean; mobileOpen: boolean; onNavigate: (section: AdminSection) => void; onToggle: () => void; onCloseMobile: () => void; onLogout: () => void };
+
+export function AdminSidebar({ active, collapsed, mobileOpen, onNavigate, onToggle, onCloseMobile, onLogout }: AdminSidebarProps) {
+  return <>
+    <div onClick={onCloseMobile} className={`fixed inset-0 z-30 bg-black/60 transition md:hidden ${mobileOpen ? "visible opacity-100" : "invisible opacity-0"}`} />
+    <aside className={`fixed inset-y-0 left-0 z-40 flex w-[260px] flex-col border-r border-[#26252a] bg-[#141417] transition-all duration-300 md:relative md:translate-x-0 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} ${collapsed ? "md:w-[82px]" : ""}`}>
+      <div className="flex h-[76px] items-center justify-between border-b border-[#26252a] px-5"><div className={`flex items-center gap-3 overflow-hidden ${collapsed ? "md:mx-auto" : ""}`}><span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#e33b32] font-display text-xl text-white">E</span><div className={`${collapsed ? "md:hidden" : ""}`}><p className="whitespace-nowrap text-sm font-bold text-white">Elite Burger</p><p className="text-[10px] uppercase tracking-[0.2em] text-[#85838c]">House admin</p></div></div><button onClick={onCloseMobile} aria-label="Fechar menu" className="text-[#85838c] md:hidden"><X size={20} /></button></div>
+      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-5">{adminNav.map((item) => { const Icon = iconMap[item.icon]; return <button key={item.id} onClick={() => { onNavigate(item.id); onCloseMobile(); }} className={`group flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-sm font-medium transition ${active === item.id ? "bg-[#e33b32] text-white shadow-lg shadow-[#e33b32]/15" : "text-[#9b99a3] hover:bg-[#211f23] hover:text-white"}`}><Icon size={18} strokeWidth={active === item.id ? 2.4 : 1.8} /><span className={`whitespace-nowrap ${collapsed ? "md:hidden" : ""}`}>{item.label}</span>{item.id === "orders" && <span className={`ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold ${active === item.id ? "bg-white/20 text-white" : "bg-[#29272c] text-[#c3c0c9]"} ${collapsed ? "md:hidden" : ""}`}>12</span>}</button>; })}</nav>
+      <div className="border-t border-[#26252a] p-3"><button onClick={onToggle} className="hidden w-full items-center justify-center gap-2 rounded-xl px-3 py-3 text-xs font-semibold text-[#85838c] transition hover:bg-[#211f23] hover:text-white md:flex">{collapsed ? <ChevronRight size={17} /> : <><ChevronLeft size={17} /> Recolher menu</>}</button><div className={`mt-2 flex items-center gap-3 rounded-xl bg-[#1b1a1e] p-3 ${collapsed ? "md:justify-center" : ""}`}><div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#f0b849] text-xs font-black text-[#171313]">GB</div><div className={`min-w-0 ${collapsed ? "md:hidden" : ""}`}><p className="truncate text-xs font-bold text-white">Gestor Burger</p><p className="truncate text-[10px] text-[#85838c]">Administrador</p></div><button onClick={onLogout} aria-label="Sair" className={`ml-auto rounded-lg p-1 text-[#85838c] transition hover:bg-[#2b2527] hover:text-white ${collapsed ? "md:hidden" : ""}`}><LogOut size={15} /></button></div></div>
+    </aside>
+  </>;
+}
+
+const iconMap = { LayoutDashboard, ClipboardList, Utensils, Tags, PanelsTopLeft, Sparkles, TicketPercent, Users, ChartNoAxesCombined, Settings2 } as const;

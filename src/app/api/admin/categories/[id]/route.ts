@@ -1,0 +1,6 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) { if (!prisma) return NextResponse.json({ error: "Banco de dados não configurado." }, { status: 503 }); try { const body = await request.json(); const data: Record<string, unknown> = {}; for (const key of ["name", "image", "active", "sortOrder"]) if (key in body) data[key] = body[key]; if (typeof data.name === "string") data.slug = data.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, ""); return NextResponse.json(await prisma.category.update({ where: { id: (await params).id }, data })); } catch { return NextResponse.json({ error: "Não foi possível atualizar a categoria." }, { status: 400 }); } }
+
+export async function DELETE(_: Request, { params }: { params: Promise<{ id: string }> }) { if (!prisma) return NextResponse.json({ error: "Banco de dados não configurado." }, { status: 503 }); try { await prisma.category.delete({ where: { id: (await params).id } }); return NextResponse.json({ deleted: true }); } catch { return NextResponse.json({ error: "Não foi possível excluir a categoria." }, { status: 400 }); } }

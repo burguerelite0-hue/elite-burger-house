@@ -1,0 +1,18 @@
+import { notFound } from "next/navigation";
+import { PrintButton } from "@/components/admin/PrintButton";
+import { prisma } from "@/lib/prisma";
+
+const money = (value: unknown) => `R$ ${Number(value).toFixed(2).replace(".", ",")}`;
+const paymentLabels: Record<string, string> = { PIX: "PIX", CASH: "Dinheiro", CREDIT_CARD: "Cartão", DEBIT_CARD: "Cartão de débito" };
+
+export default async function PrintOrderPage({ params }: { params: Promise<{ id: string }> }) {
+  if (!prisma) return <PrintError message="Banco de dados não configurado." />;
+  const order = await prisma.order.findUnique({ where: { id: (await params).id }, include: { customer: true, coupon: true, items: true } });
+  if (!order) notFound();
+  const customer = order.customer;
+  return <main className="thermal-page min-h-screen bg-[#f3f3f3] px-4 py-8 text-[#111] print:bg-white print:p-0"><div className="thermal-actions mx-auto mb-5 flex max-w-[380px] justify-end"><PrintButton /></div><article className="thermal-receipt mx-auto max-w-[380px] bg-white p-5 font-mono text-[12px] leading-[1.35] shadow-sm print:max-w-none print:p-0 print:shadow-none"><header className="text-center"><h1 className="text-[18px] font-black tracking-wide">ELITE BURGER HOUSE</h1><p className="mt-1">PEDIDO {order.orderNumber}</p><p>{order.createdAt.toLocaleString("pt-BR")}</p></header><Rule /><section><p><strong>CLIENTE:</strong> {customer?.name ?? "Não informado"}</p><p><strong>WHATSAPP:</strong> {customer?.phone ?? "Não informado"}</p><p><strong>ENDEREÇO:</strong> {order.address}, {order.number}</p><p><strong>BAIRRO:</strong> {order.neighborhood}</p>{order.complement && <p><strong>COMPLEMENTO:</strong> {order.complement}</p>}</section><Rule /><section><p className="mb-2 text-center font-bold">PRODUTOS</p>{order.items.map((item) => <div key={item.id} className="mb-2 grid grid-cols-[34px_1fr_auto] gap-2"><span>{item.quantity}x</span><span>{item.productName}</span><span>{money(item.total)}</span></div>)}</section><Rule /><section className="space-y-1"><Line label="Subtotal" value={money(order.subtotal)} />{order.coupon && <Line label={`Cupom (${order.coupon.code})`} value="Aplicado" />}{Number(order.discount) > 0 && <Line label="Desconto" value={`- ${money(order.discount)}`} />}{Number(order.deliveryFee) > 0 && <Line label="Taxa de entrega" value={money(order.deliveryFee)} />}<Line label="TOTAL" value={money(order.total)} strong /></section><Rule /><section className="space-y-1"><p><strong>PAGAMENTO:</strong> {paymentLabels[order.paymentMethod] ?? order.paymentMethod}</p>{order.changeFor !== null && <p><strong>TROCO PARA:</strong> {money(order.changeFor)}</p>}</section>{order.notes && <><Rule /><section><p><strong>OBSERVAÇÕES:</strong></p><p>{order.notes}</p></section></>}<footer className="mt-6 text-center text-[11px]">Obrigado pela preferência!</footer></article></main>;
+}
+
+function Rule() { return <div className="my-3 border-t border-dashed border-[#555]" />; }
+function Line({ label, value, strong = false }: { label: string; value: string; strong?: boolean }) { return <div className={`flex justify-between gap-3 ${strong ? "text-[15px] font-black" : ""}`}><span>{label}</span><span>{value}</span></div>; }
+function PrintError({ message }: { message: string }) { return <main className="thermal-page flex min-h-screen items-center justify-center bg-[#f7f6f7] px-5 text-center"><div><h1 className="text-xl font-bold">Não foi possível carregar o pedido</h1><p className="mt-2 text-sm text-[#777]">{message}</p></div></main>; }

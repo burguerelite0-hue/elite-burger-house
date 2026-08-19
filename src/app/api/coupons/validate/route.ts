@@ -1,0 +1,5 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { calculateCouponDiscount, couponError } from "@/lib/coupon";
+
+export async function POST(request: Request) { if (!prisma) return NextResponse.json({ error: "Banco de dados não configurado." }, { status: 503 }); const body = await request.json(); const code = String(body.code ?? "").trim().toUpperCase(); const subtotal = Number(body.subtotal) || 0; if (!code || subtotal <= 0) return NextResponse.json({ error: "Informe o cupom e um subtotal válido." }, { status: 400 }); const coupon = await prisma.coupon.findUnique({ where: { code } }); if (!coupon) return NextResponse.json({ error: "Cupom não encontrado." }, { status: 404 }); const error = couponError(coupon, subtotal); if (error) return NextResponse.json({ error }, { status: 400 }); const discount = calculateCouponDiscount(coupon.type, Number(coupon.value), subtotal); return NextResponse.json({ code: coupon.code, type: coupon.type, discount, minimumValue: Number(coupon.minimumValue) }); }

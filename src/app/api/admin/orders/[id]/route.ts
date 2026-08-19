@@ -1,0 +1,5 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+const statuses = new Set(["NEW", "PREPARING", "OUT_FOR_DELIVERY", "COMPLETED", "CANCELLED"]);
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) { if (!prisma) return NextResponse.json({ error: "Banco de dados não configurado." }, { status: 503 }); const body = await request.json(); if (!statuses.has(String(body.status))) return NextResponse.json({ error: "Status inválido." }, { status: 400 }); try { return NextResponse.json(await prisma.order.update({ where: { id: (await params).id }, data: { status: String(body.status) as "NEW" | "PREPARING" | "OUT_FOR_DELIVERY" | "COMPLETED" | "CANCELLED" } })); } catch { return NextResponse.json({ error: "Não foi possível atualizar o pedido." }, { status: 400 }); } }

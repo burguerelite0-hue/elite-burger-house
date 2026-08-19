@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0c0b0b;
+  --foreground: #ffffff;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-body);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), sans-serif;
+}
+
+html { scroll-behavior: smooth; }
+::selection { background: #d9342b; color: #fff; }
+.font-display { font-family: var(--font-display), sans-serif; }
+.hero-grid { background-image: linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px); background-size: 48px 48px; }
+
+body:has(.thermal-page) .cart-floating,
+body:has(.thermal-page) .cart-drawer { display: none !important; }
+
+@media print {
+  @page { size: 80mm auto; margin: 4mm; }
+  body { background: #fff !important; color: #111 !important; }
+  .thermal-actions { display: none !important; }
+  .thermal-receipt { width: 72mm; font-family: "Courier New", monospace; }
+}
